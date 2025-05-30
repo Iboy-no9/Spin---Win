@@ -1,5 +1,9 @@
 import type { Config } from "tailwindcss";
 
+// Standard Tailwind CSS default font stacks
+const defaultSansStack = ['ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', "Segoe UI", 'Roboto', "Helvetica Neue", 'Arial', "Noto Sans", 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"];
+const defaultMonoStack = ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'];
+
 export default {
     darkMode: ["class"],
     content: [
@@ -9,6 +13,10 @@ export default {
   ],
   theme: {
   	extend: {
+      fontFamily: {
+        sans: ['var(--font-poppins)', ...defaultSansStack],
+        mono: ['var(--font-geist-mono)', ...defaultMonoStack],
+      },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

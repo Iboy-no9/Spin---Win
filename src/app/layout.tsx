@@ -1,11 +1,12 @@
 import type {Metadata} from 'next';
-import {Geist, Geist_Mono} from 'next/font/google';
+import { Poppins, Geist_Mono } from 'next/font/google'; // Changed Geist to Poppins
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const poppins = Poppins({
+  variable: '--font-poppins',
   subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'], // Added standard Poppins weights
 });
 
 const geistMono = Geist_Mono({
@@ -24,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html lang="en" className={`${poppins.variable} ${geistMono.variable}`}>
+      <body className="antialiased">
         {children}
         <Toaster />
       </body>

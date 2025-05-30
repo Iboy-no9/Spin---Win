@@ -2,9 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
-}
+/* Removed explicit font-family from here as Tailwind will handle it */
 
 @layer base {
   :root {
@@ -99,7 +97,7 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans; /* Added font-sans */
     min-height: 100vh;
     display: flex;
     flex-direction: column;
