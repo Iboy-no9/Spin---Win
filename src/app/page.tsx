@@ -12,12 +12,12 @@ import { Meh, Gift } from 'lucide-react';
 import { RupeeCircleIcon } from '@/components/rupee-circle-icon';
 
 const PRIZES_CONFIG: Prize[] = [
-  { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.20, color: '#CFD8DC', textColor: '#37474F', icon: Meh },
-  { id: 'sweets', name: 'Sweets', probability: 0.20, color: '#F8BBD0', textColor: '#880E4F', icon: Gift },
-  { id: '10-rupees', name: '₹10', probability: 0.20, color: '#BBDEFB', textColor: '#1565C0', icon: (props) => <RupeeCircleIcon {...props} amount="10" /> },
-  { id: '20-rupees', name: '₹20', probability: 0.15, color: '#B2EBF2', textColor: '#00838F', icon: (props) => <RupeeCircleIcon {...props} amount="20" /> },
-  { id: '50-rupees', name: '₹50', probability: 0.15, color: '#C8E6C9', textColor: '#2E7D32', icon: (props) => <RupeeCircleIcon {...props} amount="50" /> },
-  { id: '100-rupees', name: '₹100', probability: 0.10, color: '#FFF9C4', textColor: '#F9A825', icon: (props) => <RupeeCircleIcon {...props} amount="100" /> },
+  { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.40, color: '#CFD8DC', textColor: '#37474F', icon: Meh },
+  { id: 'sweets', name: 'Sweets', probability: 0.38, color: '#F8BBD0', textColor: '#880E4F', icon: Gift },
+  { id: '10-rupees', name: '₹10', probability: 0.10, color: '#BBDEFB', textColor: '#1565C0', icon: (props) => <RupeeCircleIcon {...props} amount="10" /> },
+  { id: '20-rupees', name: '₹20', probability: 0.05, color: '#B2EBF2', textColor: '#00838F', icon: (props) => <RupeeCircleIcon {...props} amount="20" /> },
+  { id: '50-rupees', name: '₹50', probability: 0.05, color: '#C8E6C9', textColor: '#2E7D32', icon: (props) => <RupeeCircleIcon {...props} amount="50" /> },
+  { id: '100-rupees', name: '₹100', probability: 0.02, color: '#FFF9C4', textColor: '#F9A825', icon: (props) => <RupeeCircleIcon {...props} amount="100" /> },
 ];
 
 // Validate probabilities sum to 1
@@ -38,7 +38,7 @@ export default function HomePage() {
   const [dynamicWheelSize, setDynamicWheelSize] = useState<number>(SERVER_DEFAULT_WHEEL_SIZE);
 
   const determinePrize = useCallback((): Prize => {
-    let random = Math.random(); 
+    let random = Math.random();
     let cumulativeProbability = 0;
     for (const prize of PRIZES_CONFIG) {
       cumulativeProbability += prize.probability;
@@ -48,21 +48,21 @@ export default function HomePage() {
     }
     return PRIZES_CONFIG[PRIZES_CONFIG.length - 1];
   }, []);
-  
+
   useEffect(() => {
     setIsClient(true);
-    
+
     const updateSizes = () => {
       setWindowSize({width: window.innerWidth, height: window.innerHeight});
       // Ensure dynamicWheelSize is only calculated on the client after mount
       setDynamicWheelSize(Math.min(420, window.innerWidth * 0.85));
     };
-    
+
     // Set initial size on client mount
     if (typeof window !== 'undefined') {
       updateSizes();
     }
-    
+
     window.addEventListener('resize', updateSizes);
     return () => window.removeEventListener('resize', updateSizes);
   }, []);
@@ -79,16 +79,16 @@ export default function HomePage() {
   const handleSpinComplete = useCallback((prize: Prize) => {
     setIsSpinning(false);
     setTargetPrize(null);
-    
+
     if (prize.id !== 'better-luck') {
       setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 7000); 
+      setTimeout(() => setShowConfetti(false), 7000);
     }
 
     toast({
       title: "Spin Complete!",
       description: `You won: ${prize.name}`,
-      variant: prize.id === 'better-luck' ? 'default' : 'default', 
+      variant: prize.id === 'better-luck' ? 'default' : 'default',
       duration: 5000,
     });
   }, [toast]);
@@ -122,7 +122,7 @@ export default function HomePage() {
               targetPrize={targetPrize}
               isSpinning={isSpinning}
               onSpinComplete={handleSpinComplete}
-              wheelSize={isClient ? dynamicWheelSize : SERVER_DEFAULT_WHEEL_SIZE} 
+              wheelSize={isClient ? dynamicWheelSize : SERVER_DEFAULT_WHEEL_SIZE}
             />
             <Button
               onClick={handleSpin}
@@ -135,10 +135,9 @@ export default function HomePage() {
             </Button>
           </CardContent>
         </Card>
-        
-        {/* PrizeDisplay component removed */}
+
       </main>
-      
+
       <footer className="mt-auto pt-8 pb-6 text-center text-muted-foreground text-sm">
         <p>&copy; 2025 Perunnal Spinner. Celebrate responsibly!</p>
       </footer>
