@@ -14,10 +14,10 @@ import { RupeeCircleIcon } from '@/components/rupee-circle-icon';
 const PRIZES_CONFIG: Prize[] = [
   { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.40, color: '#CFD8DC', textColor: '#37474F', icon: Meh },
   { id: 'sweets', name: 'Sweets', probability: 0.38, color: '#F8BBD0', textColor: '#880E4F', icon: Gift },
-  { id: '10-rupees', name: '10 Rupees', probability: 0.10, color: '#BBDEFB', textColor: '#1565C0', icon: (props) => <RupeeCircleIcon {...props} amount="10" /> },
-  { id: '20-rupees', name: '20 Rupees', probability: 0.05, color: '#B2EBF2', textColor: '#00838F', icon: (props) => <RupeeCircleIcon {...props} amount="20" /> },
-  { id: '50-rupees', name: '50 Rupees', probability: 0.05, color: '#C8E6C9', textColor: '#2E7D32', icon: (props) => <RupeeCircleIcon {...props} amount="50" /> },
-  { id: '100-rupees', name: '100 Rupees', probability: 0.02, color: '#FFF9C4', textColor: '#F9A825', icon: (props) => <RupeeCircleIcon {...props} amount="100" /> },
+  { id: '10-rupees', name: '10 Rupees', probability: 0.10, color: '#BBDEFB', textColor: '#1565C0', icon: (props) => <RupeeCircleIcon {...props} amount="10" />, value: 10 },
+  { id: '20-rupees', name: '20 Rupees', probability: 0.05, color: '#B2EBF2', textColor: '#00838F', icon: (props) => <RupeeCircleIcon {...props} amount="20" />, value: 20 },
+  { id: '50-rupees', name: '50 Rupees', probability: 0.05, color: '#C8E6C9', textColor: '#2E7D32', icon: (props) => <RupeeCircleIcon {...props} amount="50" />, value: 50 },
+  { id: '100-rupees', name: '100 Rupees', probability: 0.02, color: '#FFF9C4', textColor: '#F9A825', icon: (props) => <RupeeCircleIcon {...props} amount="100" />, value: 100 },
 ];
 
 // Validate probabilities sum to 1
@@ -27,6 +27,8 @@ if (Math.abs(totalProbability - 1.0) > 1e-5) {
 }
 
 const SERVER_DEFAULT_WHEEL_SIZE = 300;
+const MAX_CLAIMABLE_RUPEES = 500;
+const CLAIMED_AMOUNT_STORAGE_KEY = 'spinWinTotalClaimedAmount';
 
 export default function HomePage() {
   const [isSpinning, setIsSpinning] = useState(false);
@@ -36,49 +38,100 @@ export default function HomePage() {
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
   const [dynamicWheelSize, setDynamicWheelSize] = useState<number>(SERVER_DEFAULT_WHEEL_SIZE);
+  const [totalClaimedAmount, setTotalClaimedAmount] = useState<number>(0);
 
-  const determinePrize = useCallback((): Prize => {
-    let random = Math.random();
-    let cumulativeProbability = 0;
-    for (const prize of PRIZES_CONFIG) {
-      cumulativeProbability += prize.probability;
-      if (random < cumulativeProbability) {
-        return prize;
-      }
-    }
-    return PRIZES_CONFIG[PRIZES_CONFIG.length - 1];
-  }, []);
 
   useEffect(() => {
     setIsClient(true);
 
     const updateSizes = () => {
       setWindowSize({width: window.innerWidth, height: window.innerHeight});
-      // Ensure dynamicWheelSize is only calculated on the client after mount and is an integer
       setDynamicWheelSize(Math.round(Math.min(420, window.innerWidth * 0.85)));
     };
 
-    // Set initial size on client mount
     if (typeof window !== 'undefined') {
       updateSizes();
+      const storedAmount = localStorage.getItem(CLAIMED_AMOUNT_STORAGE_KEY);
+      if (storedAmount) {
+        setTotalClaimedAmount(parseInt(storedAmount, 10) || 0);
+      }
     }
 
     window.addEventListener('resize', updateSizes);
     return () => window.removeEventListener('resize', updateSizes);
   }, []);
 
+  useEffect(() => {
+    if (isClient) {
+      localStorage.setItem(CLAIMED_AMOUNT_STORAGE_KEY, totalClaimedAmount.toString());
+    }
+  }, [totalClaimedAmount, isClient]);
+
 
   const handleSpin = () => {
     if (!isClient || isSpinning) return;
 
-    setIsSpinning(true);
-    const determinedPrize = determinePrize();
+    let availablePrizes: Prize[];
+    const currentTotalClaimed = totalClaimedAmount;
+
+    if (currentTotalClaimed >= MAX_CLAIMABLE_RUPEES) {
+      // Only non-cash prizes are available
+      availablePrizes = PRIZES_CONFIG.filter(p => !p.value);
+    } else {
+      // All non-cash prizes + cash prizes that don't exceed the limit
+      availablePrizes = PRIZES_CONFIG.filter(p => {
+        if (!p.value) return true; // Non-cash prize
+        return currentTotalClaimed + p.value <= MAX_CLAIMABLE_RUPEES;
+      });
+    }
+
+    // If all cash prizes are filtered out and only non-cash prizes remain,
+    // availablePrizes will correctly reflect that.
+    // If availablePrizes is empty (e.g. if somehow all prizes were cash and over limit), fallback.
+    if (availablePrizes.length === 0) {
+      const betterLuckPrize = PRIZES_CONFIG.find(p => p.id === 'better-luck');
+      if (betterLuckPrize) {
+        setTargetPrize(betterLuckPrize);
+        setIsSpinning(true);
+        return;
+      }
+      // Should not happen if 'better-luck' is always in PRIZES_CONFIG
+      console.error("No available prizes and 'better-luck' not found.");
+      return;
+    }
+    
+    // Re-normalize probabilities for the available prizes
+    const sumOfAvailableProbabilities = availablePrizes.reduce((sum, prize) => sum + prize.probability, 0);
+    
+    let random = Math.random() * sumOfAvailableProbabilities;
+    let determinedPrize: Prize | null = null;
+
+    for (const prize of availablePrizes) {
+      if (random < prize.probability) {
+        determinedPrize = prize;
+        break;
+      }
+      random -= prize.probability;
+    }
+
+    // Fallback if somehow no prize is chosen (should be rare with correct logic)
+    if (!determinedPrize && availablePrizes.length > 0) {
+      determinedPrize = availablePrizes[availablePrizes.length - 1];
+    } else if (!determinedPrize) {
+        // Ultimate fallback to better-luck if something went wrong
+        determinedPrize = PRIZES_CONFIG.find(p => p.id === 'better-luck') || PRIZES_CONFIG[0];
+    }
+    
     setTargetPrize(determinedPrize);
+    setIsSpinning(true);
   };
 
   const handleSpinComplete = useCallback((prize: Prize) => {
     setIsSpinning(false);
-    setTargetPrize(null); // Clear target prize for next spin
+    
+    if (prize.value && (totalClaimedAmount + prize.value <= MAX_CLAIMABLE_RUPEES)) {
+        setTotalClaimedAmount(prev => prev + (prize.value || 0));
+    }
 
     if (prize.id !== 'better-luck') {
       setShowConfetti(true);
@@ -88,10 +141,11 @@ export default function HomePage() {
     toast({
       title: "Spin Complete!",
       description: `You won: ${prize.name}`,
-      variant: prize.id === 'better-luck' ? 'default' : 'default', // 'default' can be 'destructive' or other variants
+      variant: prize.id === 'better-luck' ? 'default' : 'default',
       duration: 5000,
     });
-  }, [toast]);
+    setTargetPrize(null); // Clear target prize for next spin
+  }, [toast, totalClaimedAmount]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 space-y-8 bg-background">
@@ -109,6 +163,7 @@ export default function HomePage() {
           <span className="text-foreground">പെരുന്നാൾ</span><span className="text-accent">പൈസ</span>
         </h1>
         <p className="text-muted-foreground text-base mt-2">Spin the wheel and try your luck to win exciting prizes this Perunnal!</p>
+        {isClient && <p className="text-sm text-primary mt-1">Total Cash Claimed: ₹{totalClaimedAmount} / ₹{MAX_CLAIMABLE_RUPEES}</p>}
       </header>
 
       <main className="flex flex-col items-center space-y-8 w-full max-w-md">
@@ -135,7 +190,6 @@ export default function HomePage() {
             </Button>
           </CardContent>
         </Card>
-
       </main>
 
       <footer className="mt-auto pt-8 pb-6 text-center text-muted-foreground text-sm">
