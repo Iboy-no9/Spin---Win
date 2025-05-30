@@ -5,10 +5,10 @@ import { useState, useCallback, useEffect } from 'react';
 import type { Prize } from '@/types';
 import { SpinWheel } from '@/components/spin-wheel';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
 import Confetti from 'react-confetti';
-import { Meh, Gift } from 'lucide-react';
+import { Meh, Gift, Instagram, MessageCircle } from 'lucide-react'; // Added Instagram, MessageCircle
 import { RupeeCircleIcon } from '@/components/rupee-circle-icon';
 
 const PRIZES_CONFIG: Prize[] = [
@@ -20,7 +20,6 @@ const PRIZES_CONFIG: Prize[] = [
   { id: '100-rupees', name: '100 Rupees', probability: 0.01, color: '#FFF9C4', textColor: '#F9A825', icon: (props) => <RupeeCircleIcon {...props} amount="100" />, value: 100 },
 ];
 
-// Validate probabilities sum to 1
 const totalProbability = PRIZES_CONFIG.reduce((sum, prize) => sum + prize.probability, 0);
 if (Math.abs(totalProbability - 1.0) > 1e-5) {
   console.warn(`Total prize probability is ${totalProbability}, not 1.0. Please check PRIZES_CONFIG.`);
@@ -29,6 +28,7 @@ if (Math.abs(totalProbability - 1.0) > 1e-5) {
 const SERVER_DEFAULT_WHEEL_SIZE = 300;
 const MAX_CLAIMABLE_RUPEES = 500;
 const CLAIMED_AMOUNT_STORAGE_KEY = 'spinWinTotalClaimedAmount';
+const CHANNEL_VERIFICATION_KEY = 'perunnalPaisaVerifiedChannels';
 
 export default function HomePage() {
   const [isSpinning, setIsSpinning] = useState(false);
@@ -39,29 +39,35 @@ export default function HomePage() {
   const [isClient, setIsClient] = useState(false);
   const [dynamicWheelSize, setDynamicWheelSize] = useState<number>(SERVER_DEFAULT_WHEEL_SIZE);
   const [totalClaimedAmount, setTotalClaimedAmount] = useState<number>(0);
-
+  const [hasVerifiedChannels, setHasVerifiedChannels] = useState<boolean>(false);
 
   useEffect(() => {
     setIsClient(true);
-
-    const updateSizes = () => {
-      if (typeof window !== 'undefined') {
-        setWindowSize({width: window.innerWidth, height: window.innerHeight});
-        setDynamicWheelSize(Math.round(Math.min(420, window.innerWidth * 0.85)));
-      }
-    };
-    
-    updateSizes(); // Initial call
-
-    const storedAmount = localStorage.getItem(CLAIMED_AMOUNT_STORAGE_KEY);
-    if (storedAmount) {
-      setTotalClaimedAmount(parseInt(storedAmount, 10) || 0);
-    }
-    
-
-    window.addEventListener('resize', updateSizes);
-    return () => window.removeEventListener('resize', updateSizes);
   }, []);
+
+  useEffect(() => {
+    if (isClient) {
+      const storedVerification = localStorage.getItem(CHANNEL_VERIFICATION_KEY);
+      if (storedVerification === 'true') {
+        setHasVerifiedChannels(true);
+      }
+
+      const storedAmount = localStorage.getItem(CLAIMED_AMOUNT_STORAGE_KEY);
+      if (storedAmount) {
+        setTotalClaimedAmount(parseInt(storedAmount, 10) || 0);
+      }
+
+      const updateSizes = () => {
+        if (typeof window !== 'undefined') {
+          setWindowSize({width: window.innerWidth, height: window.innerHeight});
+          setDynamicWheelSize(Math.round(Math.min(420, window.innerWidth * 0.85)));
+        }
+      };
+      updateSizes();
+      window.addEventListener('resize', updateSizes);
+      return () => window.removeEventListener('resize', updateSizes);
+    }
+  }, [isClient]);
 
   useEffect(() => {
     if (isClient) {
@@ -77,19 +83,14 @@ export default function HomePage() {
     const currentTotalClaimed = totalClaimedAmount;
 
     if (currentTotalClaimed >= MAX_CLAIMABLE_RUPEES) {
-      // Only non-cash prizes are available
       availablePrizes = PRIZES_CONFIG.filter(p => !p.value);
     } else {
-      // All non-cash prizes + cash prizes that don't exceed the limit
       availablePrizes = PRIZES_CONFIG.filter(p => {
-        if (!p.value) return true; // Non-cash prize
+        if (!p.value) return true;
         return currentTotalClaimed + p.value <= MAX_CLAIMABLE_RUPEES;
       });
     }
 
-    // If all cash prizes are filtered out and only non-cash prizes remain,
-    // availablePrizes will correctly reflect that.
-    // If availablePrizes is empty (e.g. if somehow all prizes were cash and over limit), fallback.
     if (availablePrizes.length === 0) {
       const betterLuckPrize = PRIZES_CONFIG.find(p => p.id === 'better-luck');
       if (betterLuckPrize) {
@@ -97,14 +98,11 @@ export default function HomePage() {
         setIsSpinning(true);
         return;
       }
-      // Should not happen if 'better-luck' is always in PRIZES_CONFIG
       console.error("No available prizes and 'better-luck' not found.");
       return;
     }
     
-    // Re-normalize probabilities for the available prizes
     const sumOfAvailableProbabilities = availablePrizes.reduce((sum, prize) => sum + prize.probability, 0);
-    
     let random = Math.random() * sumOfAvailableProbabilities;
     let determinedPrize: Prize | null = null;
 
@@ -116,11 +114,9 @@ export default function HomePage() {
       random -= prize.probability;
     }
 
-    // Fallback if somehow no prize is chosen (should be rare with correct logic)
     if (!determinedPrize && availablePrizes.length > 0) {
       determinedPrize = availablePrizes[availablePrizes.length - 1];
     } else if (!determinedPrize) {
-        // Ultimate fallback to better-luck if something went wrong
         determinedPrize = PRIZES_CONFIG.find(p => p.id === 'better-luck') || PRIZES_CONFIG[0];
     }
     
@@ -146,8 +142,64 @@ export default function HomePage() {
       variant: prize.id === 'better-luck' ? 'default' : 'default',
       duration: 5000,
     });
-    setTargetPrize(null); // Clear target prize for next spin
+    setTargetPrize(null);
   }, [toast, totalClaimedAmount]);
+
+  const handleVerification = () => {
+    setHasVerifiedChannels(true);
+    if (isClient) {
+      localStorage.setItem(CHANNEL_VERIFICATION_KEY, 'true');
+    }
+  };
+
+  if (!isClient) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background text-foreground">
+        Loading App...
+      </div>
+    );
+  }
+
+  if (!hasVerifiedChannels) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-background">
+        <Card className="w-full max-w-lg shadow-xl rounded-xl">
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="text-2xl font-semibold text-primary">Join Us & Unlock the Fun!</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6 text-center">
+            <p className="text-muted-foreground px-2">
+              To enjoy spinning the Perunnal Paisa wheel, please take a moment to follow us on Instagram and join our WhatsApp chat.
+            </p>
+            <div className="space-y-3 px-4">
+              <Button asChild className="w-full py-6 text-lg" variant="outline">
+                <a href="https://instagram.com/your_instagram_username" target="_blank" rel="noopener noreferrer">
+                  <Instagram className="mr-2 h-5 w-5" />
+                  Follow on Instagram
+                </a>
+              </Button>
+              <Button asChild className="w-full py-6 text-lg" variant="outline">
+                <a href="https://chat.whatsapp.com/YOUR_WHATSAPP_INVITE_LINK" target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="mr-2 h-5 w-5" />
+                  Join WhatsApp Chat
+                </a>
+              </Button>
+            </div>
+            <Button
+              onClick={handleVerification}
+              size="lg"
+              className="w-full max-w-xs mx-auto mt-8 py-8 text-xl font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              I've Followed & Joined!
+            </Button>
+          </CardContent>
+          <CardFooter className="text-xs text-muted-foreground text-center pt-6 pb-4">
+            <p className="w-full">Note: This step helps support our community. Thank you!</p>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 space-y-8 bg-background">
@@ -200,4 +252,3 @@ export default function HomePage() {
     </div>
   );
 }
-
