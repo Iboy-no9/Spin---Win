@@ -54,8 +54,8 @@ export default function HomePage() {
 
     const updateSizes = () => {
       setWindowSize({width: window.innerWidth, height: window.innerHeight});
-      // Ensure dynamicWheelSize is only calculated on the client after mount
-      setDynamicWheelSize(Math.min(420, window.innerWidth * 0.85));
+      // Ensure dynamicWheelSize is only calculated on the client after mount and is an integer
+      setDynamicWheelSize(Math.round(Math.min(420, window.innerWidth * 0.85)));
     };
 
     // Set initial size on client mount
@@ -78,7 +78,7 @@ export default function HomePage() {
 
   const handleSpinComplete = useCallback((prize: Prize) => {
     setIsSpinning(false);
-    setTargetPrize(null);
+    setTargetPrize(null); // Clear target prize for next spin
 
     if (prize.id !== 'better-luck') {
       setShowConfetti(true);
@@ -88,7 +88,7 @@ export default function HomePage() {
     toast({
       title: "Spin Complete!",
       description: `You won: ${prize.name}`,
-      variant: prize.id === 'better-luck' ? 'default' : 'default',
+      variant: prize.id === 'better-luck' ? 'default' : 'default', // 'default' can be 'destructive' or other variants
       duration: 5000,
     });
   }, [toast]);
