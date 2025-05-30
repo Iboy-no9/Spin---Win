@@ -12,8 +12,8 @@ import { Meh, Instagram, MessageCircle } from 'lucide-react';
 import { RupeeCircleIcon } from '@/components/rupee-circle-icon';
 
 const PRIZES_CONFIG: Prize[] = [
-  { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.99, color: '#CFD8DC', textColor: '#37474F', icon: Meh, value: 0 },
-  { id: '100-rupees', name: '100 Rupees', probability: 0.01, color: '#FFF9C4', textColor: '#F9A825', icon: (props) => <RupeeCircleIcon {...props} amount="100" />, value: 100 },
+  { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.96, color: '#CFD8DC', textColor: '#37474F', icon: Meh, value: 0 },
+  { id: '100-rupees', name: '100 Rupees', probability: 0.04, color: '#FFF9C4', textColor: '#F9A825', icon: (props) => <RupeeCircleIcon {...props} amount="100" />, value: 100 },
 ];
 
 const totalProbability = PRIZES_CONFIG.reduce((sum, prize) => sum + prize.probability, 0);
