@@ -12,11 +12,11 @@ import { Meh, Gift, Instagram, MessageCircle } from 'lucide-react';
 import { RupeeCircleIcon } from '@/components/rupee-circle-icon';
 
 const PRIZES_CONFIG: Prize[] = [
-  { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.41, color: '#CFD8DC', textColor: '#37474F', icon: Meh, value: 0 },
-  { id: 'sweets', name: 'Sweets', probability: 0.39, color: '#F8BBD0', textColor: '#880E4F', icon: Gift, value: 0 },
-  { id: '10-rupees', name: '10 Rupees', probability: 0.13, color: '#BBDEFB', textColor: '#1565C0', icon: (props) => <RupeeCircleIcon {...props} amount="10" />, value: 10 },
-  { id: '20-rupees', name: '20 Rupees', probability: 0.04, color: '#B2EBF2', textColor: '#00838F', icon: (props) => <RupeeCircleIcon {...props} amount="20" />, value: 20 },
-  { id: '50-rupees', name: '50 Rupees', probability: 0.02, color: '#C8E6C9', textColor: '#2E7D32', icon: (props) => <RupeeCircleIcon {...props} amount="50" />, value: 50 },
+  { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.44, color: '#CFD8DC', textColor: '#37474F', icon: Meh, value: 0 },
+  { id: 'sweets', name: 'Sweets', probability: 0.42, color: '#F8BBD0', textColor: '#880E4F', icon: Gift, value: 0 },
+  { id: '10-rupees', name: '10 Rupees', probability: 0.10, color: '#BBDEFB', textColor: '#1565C0', icon: (props) => <RupeeCircleIcon {...props} amount="10" />, value: 10 },
+  { id: '20-rupees', name: '20 Rupees', probability: 0.02, color: '#B2EBF2', textColor: '#00838F', icon: (props) => <RupeeCircleIcon {...props} amount="20" />, value: 20 },
+  { id: '50-rupees', name: '50 Rupees', probability: 0.01, color: '#C8E6C9', textColor: '#2E7D32', icon: (props) => <RupeeCircleIcon {...props} amount="50" />, value: 50 },
   { id: '100-rupees', name: '100 Rupees', probability: 0.01, color: '#FFF9C4', textColor: '#F9A825', icon: (props) => <RupeeCircleIcon {...props} amount="100" />, value: 100 },
 ];
 
