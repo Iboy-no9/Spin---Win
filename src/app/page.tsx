@@ -4,16 +4,15 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { Prize } from '@/types';
 import { SpinWheel } from '@/components/spin-wheel';
-import { PrizeDisplay } from '@/components/prize-display';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
 import Confetti from 'react-confetti';
-import { Meh, Gift } from 'lucide-react'; // Changed ThumbsUp to Meh
+import { Meh, Gift } from 'lucide-react';
 import { RupeeCircleIcon } from '@/components/rupee-circle-icon';
 
 const PRIZES_CONFIG: Prize[] = [
-  { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.20, color: '#CFD8DC', textColor: '#37474F', icon: Meh }, // Changed icon here
+  { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.20, color: '#CFD8DC', textColor: '#37474F', icon: Meh },
   { id: 'sweets', name: 'Sweets', probability: 0.20, color: '#F8BBD0', textColor: '#880E4F', icon: Gift },
   { id: '10-rupees', name: '₹10', probability: 0.20, color: '#BBDEFB', textColor: '#1565C0', icon: (props) => <RupeeCircleIcon {...props} amount="10" /> },
   { id: '20-rupees', name: '₹20', probability: 0.15, color: '#B2EBF2', textColor: '#00838F', icon: (props) => <RupeeCircleIcon {...props} amount="20" /> },
@@ -32,7 +31,6 @@ const SERVER_DEFAULT_WHEEL_SIZE = 300;
 export default function HomePage() {
   const [isSpinning, setIsSpinning] = useState(false);
   const [targetPrize, setTargetPrize] = useState<Prize | null>(null);
-  const [finalWinningPrize, setFinalWinningPrize] = useState<Prize | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState<{width: number, height: number} | null>(null);
   const { toast } = useToast();
@@ -74,14 +72,12 @@ export default function HomePage() {
     if (!isClient || isSpinning) return;
 
     setIsSpinning(true);
-    setFinalWinningPrize(null); 
     const determinedPrize = determinePrize();
     setTargetPrize(determinedPrize);
   };
 
   const handleSpinComplete = useCallback((prize: Prize) => {
     setIsSpinning(false);
-    setFinalWinningPrize(prize);
     setTargetPrize(null);
     
     if (prize.id !== 'better-luck') {
@@ -140,7 +136,7 @@ export default function HomePage() {
           </CardContent>
         </Card>
         
-        <PrizeDisplay winningPrize={finalWinningPrize} />
+        {/* PrizeDisplay component removed */}
       </main>
       
       <footer className="mt-auto pt-8 pb-6 text-center text-muted-foreground text-sm">
