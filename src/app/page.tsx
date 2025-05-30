@@ -5,34 +5,36 @@ import type { Prize } from '@/types';
 import { SpinWheel } from '@/components/spin-wheel';
 import { PrizeDisplay } from '@/components/prize-display';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
-import { Candy, SmilePlus, DollarSign, AlertTriangle } from 'lucide-react'; // Using DollarSign as a generic for money
+import Confetti from 'react-confetti';
+import { ThumbsUp, Gift, IndianRupee, Gem, Star, Coins } from 'lucide-react';
 
 const PRIZES_CONFIG: Prize[] = [
-  { id: 'better-luck', name: 'Better Luck!', probability: 0.30, color: '#94A3B8', textColor: '#FFFFFF', icon: SmilePlus }, // Tailwind Slate 400
-  { id: 'sweets', name: 'Sweets', probability: 0.25, color: '#EC4899', textColor: '#FFFFFF', icon: Candy }, // Tailwind Pink 500
-  { id: '10-rupees', name: '₹10', probability: 0.20, color: '#34D399', textColor: '#000000', icon: DollarSign }, // Tailwind Emerald 400
-  { id: '20-rupees', name: '₹20', probability: 0.10, color: '#FACC15', textColor: '#000000', icon: DollarSign }, // Tailwind Yellow 400
-  { id: '50-rupees', name: '₹50', probability: 0.10, color: '#FB923C', textColor: '#000000', icon: DollarSign }, // Tailwind Orange 400
-  { id: '100-rupees', name: '₹100', probability: 0.05, color: '#A78BFA', textColor: '#FFFFFF', icon: DollarSign }, // Tailwind Violet 400
+  { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.20, color: '#CFD8DC', textColor: '#37474F', icon: ThumbsUp },
+  { id: 'sweets', name: 'Sweets', probability: 0.20, color: '#F8BBD0', textColor: '#880E4F', icon: Gift },
+  { id: '10-rupees', name: '₹10', probability: 0.20, color: '#BBDEFB', textColor: '#1565C0', icon: Coins },
+  { id: '20-rupees', name: '₹20', probability: 0.15, color: '#B2EBF2', textColor: '#00838F', icon: Gem },
+  { id: '50-rupees', name: '₹50', probability: 0.15, color: '#C8E6C9', textColor: '#2E7D32', icon: Star },
+  { id: '100-rupees', name: '₹100', probability: 0.10, color: '#FFF9C4', textColor: '#F9A825', icon: IndianRupee },
 ];
 
 // Validate probabilities sum to 1
 const totalProbability = PRIZES_CONFIG.reduce((sum, prize) => sum + prize.probability, 0);
 if (Math.abs(totalProbability - 1.0) > 1e-5) {
   console.warn(`Total prize probability is ${totalProbability}, not 1.0. Please check PRIZES_CONFIG.`);
-  // Optionally, normalize or throw error. For now, just a warning.
 }
-
 
 export default function HomePage() {
   const [isSpinning, setIsSpinning] = useState(false);
   const [targetPrize, setTargetPrize] = useState<Prize | null>(null);
   const [finalWinningPrize, setFinalWinningPrize] = useState<Prize | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [windowSize, setWindowSize] = useState<{width: number, height: number} | null>(null);
   const { toast } = useToast();
 
   const determinePrize = useCallback((): Prize => {
-    let random = Math.random(); // Ensure this runs client-side
+    let random = Math.random();
     let cumulativeProbability = 0;
     for (const prize of PRIZES_CONFIG) {
       cumulativeProbability += prize.probability;
@@ -40,14 +42,19 @@ export default function HomePage() {
         return prize;
       }
     }
-    // Fallback, should ideally not be reached if probabilities sum to 1 and are correct.
     return PRIZES_CONFIG[PRIZES_CONFIG.length - 1];
   }, []);
   
-  // Ensure Math.random is only called on client after mount
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
+    setWindowSize({width: window.innerWidth, height: window.innerHeight});
+    
+    const handleResize = () => {
+      setWindowSize({width: window.innerWidth, height: window.innerHeight});
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
 
@@ -63,49 +70,69 @@ export default function HomePage() {
   const handleSpinComplete = useCallback((prize: Prize) => {
     setIsSpinning(false);
     setFinalWinningPrize(prize);
-    setTargetPrize(null); // Clear target for next spin
+    setTargetPrize(null);
+    
+    if (prize.id !== 'better-luck') {
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 7000); // Confetti for 7 seconds
+    }
+
     toast({
       title: "Spin Complete!",
       description: `You won: ${prize.name}`,
-      variant: prize.id === 'better-luck' ? 'default' : 'default', // Could use 'destructive' for "better luck" if desired
+      variant: prize.id === 'better-luck' ? 'default' : 'default',
       duration: 5000,
     });
   }, [toast]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 space-y-8 bg-background">
-      <header className="text-center">
-        <h1 className="text-5xl font-bold text-primary tracking-tight" style={{ fontFamily: "'Arial Black', Gadget, sans-serif" }}>
-          Spin<span className="text-accent">Win</span>
+      {showConfetti && windowSize && (
+        <Confetti
+          width={windowSize.width}
+          height={windowSize.height}
+          recycle={false}
+          numberOfPieces={300}
+          gravity={0.1}
+        />
+      )}
+      <header className="text-center mt-8">
+        <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
+          <span className="text-foreground">പെരുന്നാൾ</span><span className="text-accent">പൈസ</span>
         </h1>
-        <p className="text-muted-foreground text-lg mt-2">Test your luck and win exciting prizes!</p>
+        <p className="text-muted-foreground text-lg mt-3">Spin the wheel and try your luck to win exciting prizes this Perunnal!</p>
       </header>
 
-      <main className="flex flex-col items-center space-y-8 w-full">
-        <SpinWheel
-          prizes={PRIZES_CONFIG}
-          targetPrize={targetPrize}
-          isSpinning={isSpinning}
-          onSpinComplete={handleSpinComplete}
-          wheelSize={Math.min(500, typeof window !== 'undefined' ? window.innerWidth * 0.8 : 360)} // Responsive wheel size
-        />
-
-        <Button
-          onClick={handleSpin}
-          disabled={isSpinning || !isClient}
-          size="lg"
-          className="px-12 py-6 text-xl font-semibold rounded-full shadow-md hover:shadow-lg transition-shadow duration-300 bg-primary hover:bg-primary/90 text-primary-foreground"
-          aria-label="Spin the wheel"
-        >
-          {isSpinning ? 'Spinning...' : 'SPIN!'}
-        </Button>
-
+      <main className="flex flex-col items-center space-y-8 w-full max-w-md">
+        <Card className="w-full shadow-xl border-none rounded-xl">
+          <CardHeader className="text-center pb-2 pt-6">
+            <CardTitle className="text-3xl font-semibold text-foreground">Spin The Wheel!</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center space-y-6 p-6">
+            <SpinWheel
+              prizes={PRIZES_CONFIG}
+              targetPrize={targetPrize}
+              isSpinning={isSpinning}
+              onSpinComplete={handleSpinComplete}
+              wheelSize={Math.min(420, typeof window !== 'undefined' ? window.innerWidth * 0.85 : 300)} 
+            />
+            <Button
+              onClick={handleSpin}
+              disabled={isSpinning || !isClient}
+              size="lg"
+              className="px-16 py-8 text-2xl font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground w-full"
+              aria-label="Spin the wheel"
+            >
+              {isSpinning ? 'Spinning...' : 'SPIN!'}
+            </Button>
+          </CardContent>
+        </Card>
+        
         <PrizeDisplay winningPrize={finalWinningPrize} />
       </main>
       
-      <footer className="mt-auto pt-8 pb-4 text-center text-muted-foreground text-sm">
-        <p>&copy; {new Date().getFullYear()} SpinWin. All rights reserved.</p>
-        <p>Enjoy the game responsibly.</p>
+      <footer className="mt-auto pt-8 pb-6 text-center text-muted-foreground text-sm">
+        <p>&copy; 2025 Perunnal Spinner. Celebrate responsibly!</p>
       </footer>
     </div>
   );

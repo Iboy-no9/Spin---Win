@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'SpinWin - Spin The Wheel!',
-  description: 'Try your luck with SpinWin and win exciting prizes!',
+  title: 'പെരുന്നാൾ പൈസ - Spin The Wheel!',
+  description: 'Spin the wheel and try your luck to win exciting prizes this Perunnal!',
 };
 
 export default function RootLayout({
