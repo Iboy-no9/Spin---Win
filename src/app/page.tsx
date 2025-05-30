@@ -14,10 +14,10 @@ import { ThumbsUp, Gift, IndianRupee } from 'lucide-react'; // Updated imports
 const PRIZES_CONFIG: Prize[] = [
   { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.20, color: '#CFD8DC', textColor: '#37474F', icon: ThumbsUp },
   { id: 'sweets', name: 'Sweets', probability: 0.20, color: '#F8BBD0', textColor: '#880E4F', icon: Gift },
-  { id: '10-rupees', name: '₹10', probability: 0.20, color: '#BBDEFB', textColor: '#1565C0', icon: IndianRupee }, // Changed from Coins
-  { id: '20-rupees', name: '₹20', probability: 0.15, color: '#B2EBF2', textColor: '#00838F', icon: IndianRupee }, // Changed from Gem
-  { id: '50-rupees', name: '₹50', probability: 0.15, color: '#C8E6C9', textColor: '#2E7D32', icon: IndianRupee }, // Changed from Star
-  { id: '100-rupees', name: '₹100', probability: 0.10, color: '#FFF9C4', textColor: '#F9A825', icon: IndianRupee }, // Remains IndianRupee
+  { id: '10-rupees', name: '₹10', probability: 0.20, color: '#BBDEFB', textColor: '#1565C0', icon: IndianRupee },
+  { id: '20-rupees', name: '₹20', probability: 0.15, color: '#B2EBF2', textColor: '#00838F', icon: IndianRupee },
+  { id: '50-rupees', name: '₹50', probability: 0.15, color: '#C8E6C9', textColor: '#2E7D32', icon: IndianRupee },
+  { id: '100-rupees', name: '₹100', probability: 0.10, color: '#FFF9C4', textColor: '#F9A825', icon: IndianRupee },
 ];
 
 // Validate probabilities sum to 1
@@ -26,6 +26,8 @@ if (Math.abs(totalProbability - 1.0) > 1e-5) {
   console.warn(`Total prize probability is ${totalProbability}, not 1.0. Please check PRIZES_CONFIG.`);
 }
 
+const SERVER_DEFAULT_WHEEL_SIZE = 300;
+
 export default function HomePage() {
   const [isSpinning, setIsSpinning] = useState(false);
   const [targetPrize, setTargetPrize] = useState<Prize | null>(null);
@@ -33,9 +35,11 @@ export default function HomePage() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [windowSize, setWindowSize] = useState<{width: number, height: number} | null>(null);
   const { toast } = useToast();
+  const [isClient, setIsClient] = useState(false);
+  const [dynamicWheelSize, setDynamicWheelSize] = useState<number>(SERVER_DEFAULT_WHEEL_SIZE);
 
   const determinePrize = useCallback((): Prize => {
-    let random = Math.random();
+    let random = Math.random(); // This is fine here as it's part of an action, not initial render
     let cumulativeProbability = 0;
     for (const prize of PRIZES_CONFIG) {
       cumulativeProbability += prize.probability;
@@ -46,16 +50,18 @@ export default function HomePage() {
     return PRIZES_CONFIG[PRIZES_CONFIG.length - 1];
   }, []);
   
-  const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
-    setWindowSize({width: window.innerWidth, height: window.innerHeight});
     
-    const handleResize = () => {
+    const updateSizes = () => {
       setWindowSize({width: window.innerWidth, height: window.innerHeight});
+      setDynamicWheelSize(Math.min(420, window.innerWidth * 0.85));
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    
+    updateSizes(); // Initial update on client mount
+    
+    window.addEventListener('resize', updateSizes);
+    return () => window.removeEventListener('resize', updateSizes);
   }, []);
 
 
@@ -115,7 +121,7 @@ export default function HomePage() {
               targetPrize={targetPrize}
               isSpinning={isSpinning}
               onSpinComplete={handleSpinComplete}
-              wheelSize={Math.min(420, typeof window !== 'undefined' ? window.innerWidth * 0.85 : 300)} 
+              wheelSize={dynamicWheelSize} 
             />
             <Button
               onClick={handleSpin}
