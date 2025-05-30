@@ -9,11 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
 import Confetti from 'react-confetti';
-import { ThumbsUp, Gift } from 'lucide-react';
+import { Meh, Gift } from 'lucide-react'; // Changed ThumbsUp to Meh
 import { RupeeCircleIcon } from '@/components/rupee-circle-icon';
 
 const PRIZES_CONFIG: Prize[] = [
-  { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.20, color: '#CFD8DC', textColor: '#37474F', icon: ThumbsUp },
+  { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.20, color: '#CFD8DC', textColor: '#37474F', icon: Meh }, // Changed icon here
   { id: 'sweets', name: 'Sweets', probability: 0.20, color: '#F8BBD0', textColor: '#880E4F', icon: Gift },
   { id: '10-rupees', name: '₹10', probability: 0.20, color: '#BBDEFB', textColor: '#1565C0', icon: (props) => <RupeeCircleIcon {...props} amount="10" /> },
   { id: '20-rupees', name: '₹20', probability: 0.15, color: '#B2EBF2', textColor: '#00838F', icon: (props) => <RupeeCircleIcon {...props} amount="20" /> },
@@ -92,7 +92,7 @@ export default function HomePage() {
     toast({
       title: "Spin Complete!",
       description: `You won: ${prize.name}`,
-      variant: prize.id === 'better-luck' ? 'default' : 'default', // 'default' for better luck, 'success' (custom) or 'default' for wins
+      variant: prize.id === 'better-luck' ? 'default' : 'default', 
       duration: 5000,
     });
   }, [toast]);
