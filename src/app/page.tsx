@@ -181,7 +181,7 @@ export default function HomePage() {
                 </a>
               </Button>
               <Button asChild className="w-full py-6 text-lg" variant="outline" onClick={() => setWhatsappLinkClicked(true)}>
-                <a href="https://chat.whatsapp.com/YOUR_WHATSAPP_INVITE_LINK" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.whatsapp.com/channel/0029VbAaZUSCHDyfYczksp1t" target="_blank" rel="noopener noreferrer">
                   <MessageCircle className="mr-2 h-5 w-5" />
                   Join WhatsApp Chat
                 </a>
