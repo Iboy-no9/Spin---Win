@@ -12,12 +12,12 @@ import { Meh, Gift } from 'lucide-react';
 import { RupeeCircleIcon } from '@/components/rupee-circle-icon';
 
 const PRIZES_CONFIG: Prize[] = [
-  { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.40, color: '#CFD8DC', textColor: '#37474F', icon: Meh },
-  { id: 'sweets', name: 'Sweets', probability: 0.38, color: '#F8BBD0', textColor: '#880E4F', icon: Gift },
+  { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.44, color: '#CFD8DC', textColor: '#37474F', icon: Meh },
+  { id: 'sweets', name: 'Sweets', probability: 0.40, color: '#F8BBD0', textColor: '#880E4F', icon: Gift },
   { id: '10-rupees', name: '10 Rupees', probability: 0.10, color: '#BBDEFB', textColor: '#1565C0', icon: (props) => <RupeeCircleIcon {...props} amount="10" />, value: 10 },
-  { id: '20-rupees', name: '20 Rupees', probability: 0.05, color: '#B2EBF2', textColor: '#00838F', icon: (props) => <RupeeCircleIcon {...props} amount="20" />, value: 20 },
-  { id: '50-rupees', name: '50 Rupees', probability: 0.05, color: '#C8E6C9', textColor: '#2E7D32', icon: (props) => <RupeeCircleIcon {...props} amount="50" />, value: 50 },
-  { id: '100-rupees', name: '100 Rupees', probability: 0.02, color: '#FFF9C4', textColor: '#F9A825', icon: (props) => <RupeeCircleIcon {...props} amount="100" />, value: 100 },
+  { id: '20-rupees', name: '20 Rupees', probability: 0.03, color: '#B2EBF2', textColor: '#00838F', icon: (props) => <RupeeCircleIcon {...props} amount="20" />, value: 20 },
+  { id: '50-rupees', name: '50 Rupees', probability: 0.02, color: '#C8E6C9', textColor: '#2E7D32', icon: (props) => <RupeeCircleIcon {...props} amount="50" />, value: 50 },
+  { id: '100-rupees', name: '100 Rupees', probability: 0.01, color: '#FFF9C4', textColor: '#F9A825', icon: (props) => <RupeeCircleIcon {...props} amount="100" />, value: 100 },
 ];
 
 // Validate probabilities sum to 1
@@ -45,17 +45,19 @@ export default function HomePage() {
     setIsClient(true);
 
     const updateSizes = () => {
-      setWindowSize({width: window.innerWidth, height: window.innerHeight});
-      setDynamicWheelSize(Math.round(Math.min(420, window.innerWidth * 0.85)));
-    };
-
-    if (typeof window !== 'undefined') {
-      updateSizes();
-      const storedAmount = localStorage.getItem(CLAIMED_AMOUNT_STORAGE_KEY);
-      if (storedAmount) {
-        setTotalClaimedAmount(parseInt(storedAmount, 10) || 0);
+      if (typeof window !== 'undefined') {
+        setWindowSize({width: window.innerWidth, height: window.innerHeight});
+        setDynamicWheelSize(Math.round(Math.min(420, window.innerWidth * 0.85)));
       }
+    };
+    
+    updateSizes(); // Initial call
+
+    const storedAmount = localStorage.getItem(CLAIMED_AMOUNT_STORAGE_KEY);
+    if (storedAmount) {
+      setTotalClaimedAmount(parseInt(storedAmount, 10) || 0);
     }
+    
 
     window.addEventListener('resize', updateSizes);
     return () => window.removeEventListener('resize', updateSizes);
@@ -198,3 +200,4 @@ export default function HomePage() {
     </div>
   );
 }
+
