@@ -227,7 +227,6 @@ export default function HomePage() {
           <span className="text-foreground">പെരുന്നാൾ</span><span className="text-accent">പൈസ</span>
         </h1>
         <p className="text-muted-foreground text-base mt-2">Spin the wheel and try your luck to win exciting prizes this Perunnal!</p>
-        {isClient && <p className="text-sm text-primary mt-1">Total Cash Claimed: ₹{totalClaimedAmount} / ₹{MAX_CLAIMABLE_RUPEES}</p>}
       </header>
 
       <main className="flex flex-col items-center space-y-8 w-full max-w-md">
