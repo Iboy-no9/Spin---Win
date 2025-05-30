@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useCallback, useEffect } from 'react';
@@ -8,15 +9,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
 import Confetti from 'react-confetti';
-import { ThumbsUp, Gift, IndianRupee, Gem, Star, Coins } from 'lucide-react';
+import { ThumbsUp, Gift, IndianRupee } from 'lucide-react'; // Updated imports
 
 const PRIZES_CONFIG: Prize[] = [
   { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.20, color: '#CFD8DC', textColor: '#37474F', icon: ThumbsUp },
   { id: 'sweets', name: 'Sweets', probability: 0.20, color: '#F8BBD0', textColor: '#880E4F', icon: Gift },
-  { id: '10-rupees', name: '₹10', probability: 0.20, color: '#BBDEFB', textColor: '#1565C0', icon: Coins },
-  { id: '20-rupees', name: '₹20', probability: 0.15, color: '#B2EBF2', textColor: '#00838F', icon: Gem },
-  { id: '50-rupees', name: '₹50', probability: 0.15, color: '#C8E6C9', textColor: '#2E7D32', icon: Star },
-  { id: '100-rupees', name: '₹100', probability: 0.10, color: '#FFF9C4', textColor: '#F9A825', icon: IndianRupee },
+  { id: '10-rupees', name: '₹10', probability: 0.20, color: '#BBDEFB', textColor: '#1565C0', icon: IndianRupee }, // Changed from Coins
+  { id: '20-rupees', name: '₹20', probability: 0.15, color: '#B2EBF2', textColor: '#00838F', icon: IndianRupee }, // Changed from Gem
+  { id: '50-rupees', name: '₹50', probability: 0.15, color: '#C8E6C9', textColor: '#2E7D32', icon: IndianRupee }, // Changed from Star
+  { id: '100-rupees', name: '₹100', probability: 0.10, color: '#FFF9C4', textColor: '#F9A825', icon: IndianRupee }, // Remains IndianRupee
 ];
 
 // Validate probabilities sum to 1
