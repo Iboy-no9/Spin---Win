@@ -13,7 +13,7 @@ export function PrizeDisplay({ winningPrize }: PrizeDisplayProps) {
 
   const getTitle = () => {
     if (!winningPrize) {
-      return 'Spin Results';
+      return '🎰 Spin Results 🎰';
     }
     if (isBetterLuck) {
       return '😕 Oops! Try Again! 😕';
@@ -22,6 +22,9 @@ export function PrizeDisplay({ winningPrize }: PrizeDisplayProps) {
   };
 
   const getDescription = () => {
+    if (!winningPrize) {
+      return ""; // No description if no spin yet
+    }
     if (isBetterLuck) {
       return "The wheel landed on:";
     }
@@ -41,7 +44,8 @@ export function PrizeDisplay({ winningPrize }: PrizeDisplayProps) {
             <CardDescription className="text-lg mb-2 text-muted-foreground">{getDescription()}</CardDescription>
             <div className="flex items-center justify-center gap-3 text-foreground text-3xl font-bold mt-1">
               {winningPrize.icon && (
-                <winningPrize.icon className="h-10 w-10 text-primary" strokeWidth={2} />
+                <winningPrize.icon className="h-10 w-10 text-primary" // text-primary will be used as 'fill' or 'stroke' by the icon
+                />
               )}
               <span>{winningPrize.name}</span>
             </div>
