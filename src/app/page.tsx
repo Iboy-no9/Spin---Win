@@ -29,6 +29,7 @@ const SERVER_DEFAULT_WHEEL_SIZE = 300;
 const MAX_CLAIMABLE_RUPEES = 500;
 const CLAIMED_AMOUNT_STORAGE_KEY = 'spinWinTotalClaimedAmount';
 const CHANNEL_VERIFICATION_KEY = 'perunnalPaisaVerifiedChannels';
+const SPIN_LIMIT_KEY = 'perunnalPaisaHasSpun'; // Key for one-spin limit
 
 export default function HomePage() {
   const [isSpinning, setIsSpinning] = useState(false);
@@ -42,6 +43,7 @@ export default function HomePage() {
   const [hasVerifiedChannels, setHasVerifiedChannels] = useState<boolean>(false);
   const [instagramLinkClicked, setInstagramLinkClicked] = useState<boolean>(false);
   const [whatsappLinkClicked, setWhatsappLinkClicked] = useState<boolean>(false);
+  const [hasAlreadySpun, setHasAlreadySpun] = useState<boolean>(false); // State for one-spin limit
 
   useEffect(() => {
     setIsClient(true);
@@ -57,6 +59,11 @@ export default function HomePage() {
       const storedAmount = localStorage.getItem(CLAIMED_AMOUNT_STORAGE_KEY);
       if (storedAmount) {
         setTotalClaimedAmount(parseInt(storedAmount, 10) || 0);
+      }
+
+      const storedSpinStatus = localStorage.getItem(SPIN_LIMIT_KEY);
+      if (storedSpinStatus === 'true') {
+        setHasAlreadySpun(true);
       }
 
       const updateSizes = () => {
@@ -79,7 +86,7 @@ export default function HomePage() {
 
 
   const handleSpin = () => {
-    if (!isClient || isSpinning) return;
+    if (!isClient || isSpinning || hasAlreadySpun) return;
 
     let availablePrizes: Prize[];
     const currentTotalClaimed = totalClaimedAmount;
@@ -98,6 +105,8 @@ export default function HomePage() {
       if (betterLuckPrize) {
         setTargetPrize(betterLuckPrize);
         setIsSpinning(true);
+        localStorage.setItem(SPIN_LIMIT_KEY, 'true'); // Set spin limit
+        setHasAlreadySpun(true); // Update state
         return;
       }
       console.error("No available prizes and 'better-luck' not found.");
@@ -124,6 +133,8 @@ export default function HomePage() {
     
     setTargetPrize(determinedPrize);
     setIsSpinning(true);
+    localStorage.setItem(SPIN_LIMIT_KEY, 'true'); // Set spin limit
+    setHasAlreadySpun(true); // Update state
   };
 
   const handleSpinComplete = useCallback((prize: Prize) => {
@@ -236,15 +247,21 @@ export default function HomePage() {
               onSpinComplete={handleSpinComplete}
               wheelSize={isClient ? dynamicWheelSize : SERVER_DEFAULT_WHEEL_SIZE}
             />
-            <Button
-              onClick={handleSpin}
-              disabled={isSpinning || !isClient}
-              size="lg"
-              className="px-16 py-8 text-xl font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground w-full"
-              aria-label="Spin the wheel"
-            >
-              {isSpinning ? 'Spinning...' : 'SPIN!'}
-            </Button>
+            {hasAlreadySpun ? (
+              <p className="text-center text-lg text-primary font-semibold py-4">
+                You've already had your spin for this Perunnal! See you next time!
+              </p>
+            ) : (
+              <Button
+                onClick={handleSpin}
+                disabled={isSpinning || !isClient || hasAlreadySpun}
+                size="lg"
+                className="px-16 py-8 text-xl font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground w-full"
+                aria-label="Spin the wheel"
+              >
+                {isSpinning ? 'Spinning...' : 'SPIN!'}
+              </Button>
+            )}
           </CardContent>
         </Card>
       </main>
