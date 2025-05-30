@@ -12,8 +12,8 @@ import { Meh, Gift, Instagram, MessageCircle } from 'lucide-react';
 import { RupeeCircleIcon } from '@/components/rupee-circle-icon';
 
 const PRIZES_CONFIG: Prize[] = [
-  { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.41, color: '#CFD8DC', textColor: '#37474F', icon: Meh },
-  { id: 'sweets', name: 'Sweets', probability: 0.39, color: '#F8BBD0', textColor: '#880E4F', icon: Gift },
+  { id: 'better-luck', name: 'Better Luck Next Time', probability: 0.41, color: '#CFD8DC', textColor: '#37474F', icon: Meh, value: 0 },
+  { id: 'sweets', name: 'Sweets', probability: 0.39, color: '#F8BBD0', textColor: '#880E4F', icon: Gift, value: 0 },
   { id: '10-rupees', name: '10 Rupees', probability: 0.13, color: '#BBDEFB', textColor: '#1565C0', icon: (props) => <RupeeCircleIcon {...props} amount="10" />, value: 10 },
   { id: '20-rupees', name: '20 Rupees', probability: 0.04, color: '#B2EBF2', textColor: '#00838F', icon: (props) => <RupeeCircleIcon {...props} amount="20" />, value: 20 },
   { id: '50-rupees', name: '50 Rupees', probability: 0.02, color: '#C8E6C9', textColor: '#2E7D32', icon: (props) => <RupeeCircleIcon {...props} amount="50" />, value: 50 },
@@ -85,10 +85,10 @@ export default function HomePage() {
     const currentTotalClaimed = totalClaimedAmount;
 
     if (currentTotalClaimed >= MAX_CLAIMABLE_RUPEES) {
-      availablePrizes = PRIZES_CONFIG.filter(p => !p.value);
+      availablePrizes = PRIZES_CONFIG.filter(p => !p.value || p.value === 0);
     } else {
       availablePrizes = PRIZES_CONFIG.filter(p => {
-        if (!p.value) return true;
+        if (!p.value || p.value === 0) return true;
         return currentTotalClaimed + p.value <= MAX_CLAIMABLE_RUPEES;
       });
     }
@@ -129,7 +129,7 @@ export default function HomePage() {
   const handleSpinComplete = useCallback((prize: Prize) => {
     setIsSpinning(false);
     
-    if (prize.value && (totalClaimedAmount + prize.value <= MAX_CLAIMABLE_RUPEES)) {
+    if (prize.value && prize.value > 0 && (totalClaimedAmount + prize.value <= MAX_CLAIMABLE_RUPEES)) {
         setTotalClaimedAmount(prev => prev + (prize.value || 0));
     }
 
@@ -175,7 +175,7 @@ export default function HomePage() {
             </p>
             <div className="space-y-3 px-4">
               <Button asChild className="w-full py-6 text-lg" variant="outline" onClick={() => setInstagramLinkClicked(true)}>
-                <a href="https://instagram.com/your_instagram_username" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.instagram.com/lisanmedia_/" target="_blank" rel="noopener noreferrer">
                   <Instagram className="mr-2 h-5 w-5" />
                   Follow on Instagram
                 </a>
