@@ -158,7 +158,7 @@ export function SpinWheel({ prizes, targetPrize, isSpinning, onSpinComplete, whe
             
             const iconSize = roundToPrecision(wheelSize * 0.1, 3);
             const textFontSize = roundToPrecision(Math.max(8, wheelSize / 35), 1);
-            const tspanLineHeight = roundToPrecision(wheelSize / 33, 1);
+            // const tspanLineHeight = roundToPrecision(wheelSize / 33, 1); // No longer needed for single line text
 
             return (
               <g key={prize.id}>
@@ -187,9 +187,7 @@ export function SpinWheel({ prizes, targetPrize, isSpinning, onSpinComplete, whe
                   transform={`rotate(${midAngleDeg}, ${textX}, ${textY})`}
                   style={{ fontSize: `${textFontSize}px`, fontWeight: '600', fill: textColor, pointerEvents: 'none', letterSpacing: '0.025em' }}
                 >
-                  {prize.name.split(' ').map((word, i, arr) => (
-                    <tspan key={i} x={textX} dy={i > 0 && arr.length > 1 ? `${tspanLineHeight}px` : '0'}>{word}</tspan>
-                  ))}
+                  {prize.name}
                 </text>
               </g>
             );
