@@ -105,16 +105,16 @@ export default function HomePage() {
         />
       )}
       <header className="text-center mt-8">
-        <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
           <span className="text-foreground">പെരുന്നാൾ</span><span className="text-accent">പൈസ</span>
         </h1>
-        <p className="text-muted-foreground text-lg mt-3">Spin the wheel and try your luck to win exciting prizes this Perunnal!</p>
+        <p className="text-muted-foreground text-base mt-2">Spin the wheel and try your luck to win exciting prizes this Perunnal!</p>
       </header>
 
       <main className="flex flex-col items-center space-y-8 w-full max-w-md">
         <Card className="w-full shadow-xl border-none rounded-xl">
           <CardHeader className="text-center pb-2 pt-6">
-            <CardTitle className="text-3xl font-semibold text-foreground">Spin The Wheel!</CardTitle>
+            <CardTitle className="text-2xl font-semibold text-foreground">Spin The Wheel!</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-6 p-6">
             <SpinWheel
@@ -128,7 +128,7 @@ export default function HomePage() {
               onClick={handleSpin}
               disabled={isSpinning || !isClient}
               size="lg"
-              className="px-16 py-8 text-2xl font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground w-full"
+              className="px-16 py-8 text-xl font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground w-full"
               aria-label="Spin the wheel"
             >
               {isSpinning ? 'Spinning...' : 'SPIN!'}

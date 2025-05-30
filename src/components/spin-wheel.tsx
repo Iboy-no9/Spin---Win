@@ -157,8 +157,8 @@ export function SpinWheel({ prizes, targetPrize, isSpinning, onSpinComplete, whe
             const iconY = roundToPrecision(radius + iconDistance * Math.sin(midAngleRad), 3);
             
             const iconSize = roundToPrecision(wheelSize * 0.1, 3);
-            const textFontSize = roundToPrecision(Math.max(10, wheelSize / 30), 1);
-            const tspanLineHeight = roundToPrecision(wheelSize / 28, 1);
+            const textFontSize = roundToPrecision(Math.max(8, wheelSize / 35), 1);
+            const tspanLineHeight = roundToPrecision(wheelSize / 33, 1);
 
             return (
               <g key={prize.id}>
