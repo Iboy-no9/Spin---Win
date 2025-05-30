@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { useToast } from "@/hooks/use-toast";
 import Confetti from 'react-confetti';
-import { Meh, Gift, Instagram, MessageCircle } from 'lucide-react'; // Added Instagram, MessageCircle
+import { Meh, Gift, Instagram, MessageCircle } from 'lucide-react';
 import { RupeeCircleIcon } from '@/components/rupee-circle-icon';
 
 const PRIZES_CONFIG: Prize[] = [
@@ -40,6 +40,8 @@ export default function HomePage() {
   const [dynamicWheelSize, setDynamicWheelSize] = useState<number>(SERVER_DEFAULT_WHEEL_SIZE);
   const [totalClaimedAmount, setTotalClaimedAmount] = useState<number>(0);
   const [hasVerifiedChannels, setHasVerifiedChannels] = useState<boolean>(false);
+  const [instagramLinkClicked, setInstagramLinkClicked] = useState<boolean>(false);
+  const [whatsappLinkClicked, setWhatsappLinkClicked] = useState<boolean>(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -169,16 +171,16 @@ export default function HomePage() {
           </CardHeader>
           <CardContent className="space-y-6 text-center">
             <p className="text-muted-foreground px-2">
-              To enjoy spinning the Perunnal Paisa wheel, please take a moment to follow us on Instagram and join our WhatsApp chat.
+              To enjoy spinning the Perunnal Paisa wheel, please take a moment to follow us on Instagram and join our WhatsApp chat. Click the links below.
             </p>
             <div className="space-y-3 px-4">
-              <Button asChild className="w-full py-6 text-lg" variant="outline">
+              <Button asChild className="w-full py-6 text-lg" variant="outline" onClick={() => setInstagramLinkClicked(true)}>
                 <a href="https://instagram.com/your_instagram_username" target="_blank" rel="noopener noreferrer">
                   <Instagram className="mr-2 h-5 w-5" />
                   Follow on Instagram
                 </a>
               </Button>
-              <Button asChild className="w-full py-6 text-lg" variant="outline">
+              <Button asChild className="w-full py-6 text-lg" variant="outline" onClick={() => setWhatsappLinkClicked(true)}>
                 <a href="https://chat.whatsapp.com/YOUR_WHATSAPP_INVITE_LINK" target="_blank" rel="noopener noreferrer">
                   <MessageCircle className="mr-2 h-5 w-5" />
                   Join WhatsApp Chat
@@ -187,6 +189,7 @@ export default function HomePage() {
             </div>
             <Button
               onClick={handleVerification}
+              disabled={!instagramLinkClicked || !whatsappLinkClicked}
               size="lg"
               className="w-full max-w-xs mx-auto mt-8 py-8 text-xl font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground"
             >
