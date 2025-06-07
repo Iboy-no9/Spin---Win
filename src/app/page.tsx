@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Input } from '@/components/ui/input';
 import { useToast } from "@/hooks/use-toast";
 import Confetti from 'react-confetti';
-import { Meh, Instagram, MessageCircle, User } from 'lucide-react';
+import { Meh, User, Instagram, MessageCircle } from 'lucide-react'; // Added User icon
 import { RupeeCircleIcon } from '@/components/rupee-circle-icon';
 
 const PRIZES_CONFIG: Prize[] = [
@@ -23,12 +23,13 @@ if (Math.abs(totalProbability - 1.0) > 1e-5) {
 }
 
 const SERVER_DEFAULT_WHEEL_SIZE = 300;
-const MAX_CLAIMABLE_RUPEES = 500; // This constant remains but is not currently used for display
+const MAX_CLAIMABLE_RUPEES = 500;
 const CLAIMED_AMOUNT_STORAGE_KEY = 'spinWinTotalClaimedAmount';
 const CHANNEL_VERIFICATION_KEY = 'perunnalPaisaVerifiedChannels';
 const SPIN_LIMIT_KEY = 'perunnalPaisaHasSpun';
 const USER_NAME_KEY = 'perunnalPaisaUserName';
 const NAME_SUBMITTED_KEY = 'perunnalPaisaNameSubmitted';
+
 
 export default function HomePage() {
   const [isSpinning, setIsSpinning] = useState(false);
@@ -38,7 +39,7 @@ export default function HomePage() {
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
   const [dynamicWheelSize, setDynamicWheelSize] = useState<number>(SERVER_DEFAULT_WHEEL_SIZE);
-  const [totalClaimedAmount, setTotalClaimedAmount] = useState<number>(0); // Still tracked for prize logic
+  const [totalClaimedAmount, setTotalClaimedAmount] = useState<number>(0);
   
   const [hasVerifiedChannels, setHasVerifiedChannels] = useState<boolean>(false);
   const [instagramLinkClicked, setInstagramLinkClicked] = useState<boolean>(false);
@@ -109,7 +110,7 @@ export default function HomePage() {
     } else {
       availablePrizes = PRIZES_CONFIG.filter(p => {
         if (!p.value || p.value === 0) return true;
-        return currentTotalClaimed + p.value <= MAX_CLAIMABLE_RUPEES;
+        return currentTotalClaimed + (p.value || 0) <= MAX_CLAIMABLE_RUPEES;
       });
     }
 
@@ -303,7 +304,7 @@ export default function HomePage() {
         <Card className="w-full shadow-xl border-none rounded-xl">
           <CardHeader className="text-center pb-2 pt-6">
             <CardTitle className="text-2xl font-semibold text-foreground">
-              {userName ? `${userName}'s Turn to Spin!` : 'Spin The Wheel!'}
+              Spin The Wheel!
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-6 p-6">
@@ -316,7 +317,7 @@ export default function HomePage() {
             />
             {hasAlreadySpun ? (
               <p className="text-center text-lg text-primary font-semibold py-4">
-                You've already had your spin for this Perunnal, {userName}! See you next time!
+                You've already had your spin for this Perunnal! See you next time!
               </p>
             ) : (
               <Button
