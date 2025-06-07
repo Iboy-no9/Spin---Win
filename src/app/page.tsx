@@ -6,9 +6,10 @@ import type { Prize } from '@/types';
 import { SpinWheel } from '@/components/spin-wheel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { useToast } from "@/hooks/use-toast";
 import Confetti from 'react-confetti';
-import { Meh, Instagram, MessageCircle } from 'lucide-react';
+import { Meh, Instagram, MessageCircle, User } from 'lucide-react';
 import { RupeeCircleIcon } from '@/components/rupee-circle-icon';
 
 const PRIZES_CONFIG: Prize[] = [
@@ -22,10 +23,12 @@ if (Math.abs(totalProbability - 1.0) > 1e-5) {
 }
 
 const SERVER_DEFAULT_WHEEL_SIZE = 300;
-const MAX_CLAIMABLE_RUPEES = 500;
+const MAX_CLAIMABLE_RUPEES = 500; // This constant remains but is not currently used for display
 const CLAIMED_AMOUNT_STORAGE_KEY = 'spinWinTotalClaimedAmount';
 const CHANNEL_VERIFICATION_KEY = 'perunnalPaisaVerifiedChannels';
-const SPIN_LIMIT_KEY = 'perunnalPaisaHasSpun'; // Key for one-spin limit
+const SPIN_LIMIT_KEY = 'perunnalPaisaHasSpun';
+const USER_NAME_KEY = 'perunnalPaisaUserName';
+const NAME_SUBMITTED_KEY = 'perunnalPaisaNameSubmitted';
 
 export default function HomePage() {
   const [isSpinning, setIsSpinning] = useState(false);
@@ -35,11 +38,18 @@ export default function HomePage() {
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
   const [dynamicWheelSize, setDynamicWheelSize] = useState<number>(SERVER_DEFAULT_WHEEL_SIZE);
-  const [totalClaimedAmount, setTotalClaimedAmount] = useState<number>(0);
+  const [totalClaimedAmount, setTotalClaimedAmount] = useState<number>(0); // Still tracked for prize logic
+  
   const [hasVerifiedChannels, setHasVerifiedChannels] = useState<boolean>(false);
   const [instagramLinkClicked, setInstagramLinkClicked] = useState<boolean>(false);
   const [whatsappLinkClicked, setWhatsappLinkClicked] = useState<boolean>(false);
-  const [hasAlreadySpun, setHasAlreadySpun] = useState<boolean>(false); // State for one-spin limit
+  
+  const [hasAlreadySpun, setHasAlreadySpun] = useState<boolean>(false);
+
+  const [userName, setUserName] = useState<string>('');
+  const [nameInput, setNameInput] = useState<string>('');
+  const [nameSubmitted, setNameSubmitted] = useState<boolean>(false);
+
 
   useEffect(() => {
     setIsClient(true);
@@ -60,6 +70,13 @@ export default function HomePage() {
       const storedSpinStatus = localStorage.getItem(SPIN_LIMIT_KEY);
       if (storedSpinStatus === 'true') {
         setHasAlreadySpun(true);
+      }
+
+      const storedUserName = localStorage.getItem(USER_NAME_KEY);
+      const storedNameSubmitted = localStorage.getItem(NAME_SUBMITTED_KEY);
+      if (storedUserName && storedNameSubmitted === 'true') {
+        setUserName(storedUserName);
+        setNameSubmitted(true);
       }
 
       const updateSizes = () => {
@@ -101,8 +118,8 @@ export default function HomePage() {
       if (betterLuckPrize) {
         setTargetPrize(betterLuckPrize);
         setIsSpinning(true);
-        localStorage.setItem(SPIN_LIMIT_KEY, 'true'); // Set spin limit
-        setHasAlreadySpun(true); // Update state
+        if (isClient) localStorage.setItem(SPIN_LIMIT_KEY, 'true');
+        setHasAlreadySpun(true);
         return;
       }
       console.error("No available prizes and 'better-luck' not found.");
@@ -129,8 +146,8 @@ export default function HomePage() {
     
     setTargetPrize(determinedPrize);
     setIsSpinning(true);
-    localStorage.setItem(SPIN_LIMIT_KEY, 'true'); // Set spin limit
-    setHasAlreadySpun(true); // Update state
+    if (isClient) localStorage.setItem(SPIN_LIMIT_KEY, 'true');
+    setHasAlreadySpun(true);
   };
 
   const handleSpinComplete = useCallback((prize: Prize) => {
@@ -147,17 +164,31 @@ export default function HomePage() {
 
     toast({
       title: "Spin Complete!",
-      description: `You won: ${prize.name}`,
+      description: `${userName || 'You'} won: ${prize.name}`,
       variant: prize.id === 'better-luck' ? 'default' : 'default',
       duration: 5000,
     });
     setTargetPrize(null);
-  }, [toast, totalClaimedAmount]);
+  }, [toast, totalClaimedAmount, userName]);
 
   const handleVerification = () => {
     setHasVerifiedChannels(true);
     if (isClient) {
       localStorage.setItem(CHANNEL_VERIFICATION_KEY, 'true');
+    }
+  };
+
+  const handleNameSubmit = () => {
+    if (nameInput.trim() === '') {
+      toast({ title: "Please enter your name.", description: "Name cannot be empty.", variant: "destructive" });
+      return;
+    }
+    const finalName = nameInput.trim();
+    setUserName(finalName);
+    setNameSubmitted(true);
+    if (isClient) {
+      localStorage.setItem(USER_NAME_KEY, finalName);
+      localStorage.setItem(NAME_SUBMITTED_KEY, 'true');
     }
   };
 
@@ -211,6 +242,45 @@ export default function HomePage() {
     );
   }
 
+  if (!nameSubmitted) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 bg-background">
+        <Card className="w-full max-w-md shadow-xl rounded-xl">
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="text-2xl font-semibold text-primary flex items-center justify-center">
+              <User className="mr-2 h-7 w-7" />
+              Enter Your Name
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6 px-6 py-8">
+            <p className="text-muted-foreground text-center">
+              Please enter your name to personalize your spin!
+            </p>
+            <Input
+              type="text"
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              placeholder="Your Name"
+              className="text-lg py-6"
+              maxLength={50}
+            />
+            <Button
+              onClick={handleNameSubmit}
+              size="lg"
+              className="w-full py-8 text-xl font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              Let's Spin!
+            </Button>
+          </CardContent>
+           <CardFooter className="text-xs text-muted-foreground text-center pt-4 pb-4">
+            <p className="w-full">This name will be displayed with your spin result.</p>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
+
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 space-y-8 bg-background">
       {showConfetti && windowSize && (
@@ -232,7 +302,9 @@ export default function HomePage() {
       <main className="flex flex-col items-center space-y-8 w-full max-w-md">
         <Card className="w-full shadow-xl border-none rounded-xl">
           <CardHeader className="text-center pb-2 pt-6">
-            <CardTitle className="text-2xl font-semibold text-foreground">Spin The Wheel!</CardTitle>
+            <CardTitle className="text-2xl font-semibold text-foreground">
+              {userName ? `${userName}'s Turn to Spin!` : 'Spin The Wheel!'}
+            </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center space-y-6 p-6">
             <SpinWheel
@@ -244,7 +316,7 @@ export default function HomePage() {
             />
             {hasAlreadySpun ? (
               <p className="text-center text-lg text-primary font-semibold py-4">
-                You've already had your spin for this Perunnal! See you next time!
+                You've already had your spin for this Perunnal, {userName}! See you next time!
               </p>
             ) : (
               <Button
@@ -267,3 +339,4 @@ export default function HomePage() {
     </div>
   );
 }
+
