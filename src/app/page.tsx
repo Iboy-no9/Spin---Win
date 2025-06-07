@@ -317,7 +317,7 @@ export default function HomePage() {
             />
             {hasAlreadySpun ? (
               <p className="text-center text-lg text-primary font-semibold py-4">
-                You've already had your spin for this Perunnal! See you next time!
+                {userName ? `${userName}, you've` : "You've"} already had your spin for this Perunnal! See you next time!
               </p>
             ) : (
               <Button
